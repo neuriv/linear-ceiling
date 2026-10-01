@@ -1,5 +1,11 @@
 # linear-ceiling
 
+**Post-acceptance consolidation (2026-09-30):** the [focused runbook](docs/2026-09-30-consolidation-runbook.md)
+and ledger entry 0046 record a six-handoff A100 reproduction check and 60 same-model handoff replays
+each for Qwen3-4B and SmolLM3-3B. Both reproduce the zero cohort median at the original reference;
+one SmolLM3 handoff has a positive removal fraction. Here, f* is an oracle **token-removal diagnostic**,
+not a measured recomputation cost, speedup, or guarantee of generation quality.
+
 Can one AI model reuse work another model has already done?
 
 When a language model reads a prompt, it builds a **KV cache**: an internal record that saves it
@@ -14,7 +20,7 @@ flowchart LR
     C -->|Same model| D[Rebuild the prompt<br/>and test the old cache]
     C -->|Different model| E[Translate the cache<br/>with a linear map]
     D --> F[Close match in the<br/>tested handoffs]
-    E --> G[Most of the cache still<br/>needs recomputation]
+    E --> G[High representation error<br/>for the tested map]
 ```
 
 ## Contents

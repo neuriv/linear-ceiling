@@ -31,3 +31,17 @@ lines.extend([r"\bottomrule",r"\end{tabular}",r"\end{table}"])
 (EVIDENCE/"manuscript/additional-models.tex").write_text("\n".join(lines)+"\n")
 print("Generated table from verified summary:")
 print("\n".join(lines[8:-3]))
+
+lines = [r"\begin{table}[H]",r"\centering\small",
+    r"\caption{Additional-model sensitivity. Entries are handoff medians; brackets give 95\% trajectory-cluster bootstrap intervals (2,000 resamples). Each short/long cohort contains 25/35 handoffs. Values use the original $\tau_V=\tauV$ reference.}",
+    r"\label{tab:model-sensitivity}",r"\begin{tabular}{@{}llccc@{}}",r"\toprule",
+    r"Model & Cohort & $f_K^*(0.03)$ [95\% CI] & $f_V^*(\tau_V)$ & $f_V^*(0.03)$ [95\% CI] \\",r"\midrule"]
+def interval(group,metric):
+    lo,hi = group["cluster_bootstrap_95"][metric]
+    return f"{group['median'][metric]:.4f} [{lo:.4f}, {hi:.4f}]"
+for model,label in [("qwen4","Qwen3-4B"),("smollm3","SmolLM3-3B")]:
+    for cohort,name in [("e9s","Short"),("e9l","Long")]:
+        k,v = [summary["models"][model][cohort+"_"+kind] for kind in ["K","V"]]
+        lines.append(f"{label} & {name} & {interval(k,'fstar_0.03')} & {v['median']['fstar']:.4f} & {interval(v,'fstar_0.03')}"+r" \\")
+lines.extend([r"\bottomrule",r"\end{tabular}",r"\end{table}"])
+(EVIDENCE/"manuscript/model-sensitivity.tex").write_text("\n".join(lines)+"\n")
