@@ -8,6 +8,7 @@ import tomllib
 import numpy as np
 from linear_ceiling.e9_pertoken import centered_delta, token_mean, f_star, seam_distance_left
 from linear_ceiling.rng import make_rng
+from linear_ceiling.e7_stats import quantile
 
 ROOT = Path(__file__).resolve().parents[2]
 def digest(path):
@@ -108,8 +109,9 @@ def main():
                     "sender_min_max":[min(r['sender_tokens'] for r in group),max(r['sender_tokens'] for r in group)],
                     "receiver_min_max":[min(r['receiver_tokens'] for r in group),max(r['receiver_tokens'] for r in group)],
                     "zero_fstar_handoffs":sum(r["fstar"]==0 for r in group),
+                    "far_mean_above_0.03":sum(r["far_mean"]>.03 for r in group if r["far_mean"] is not None),
                     "median":{m:float(np.median([r[m] for r in group if r[m] is not None])) for m in metrics},
-                    "cluster_bootstrap_95":{m:np.quantile(boot[m],[.025,.975]).tolist() for m in metrics}}
+                    "cluster_bootstrap_95":{m:[quantile(boot[m],p) for p in [.025,.975]] for m in metrics}}
     output = args.evidence/"a100"
     prefix = "bridge" if args.bridge_only else "summary"
     result = {"verified":True,"config_sha256":digest(ROOT/"config/consolidation.toml"),

@@ -47,6 +47,10 @@ and verified by SHA256 before any remote cleanup. No model weights or credential
 
 The local summarizer verifies squared-error sums, the mean-error/R2 identity and the retained raw
 witnesses. It computes model-specific handoff medians and trajectory-cluster bootstrap intervals.
+Intervals use the repository's pinned non-interpolated quantile convention. The saved token records
+also support a descriptive error budget: token and error shares at least 16 positions after a seam,
+and the mean left after removing all nearer tokens. This is deletion under the existing diagnostic,
+not an experiment in practical boundary recomputation.
 Hardware replicas are never counted as additional handoffs. Original and new models are reported
 separately, with a table and no more than six new analysis sentences in the main paper.
 
