@@ -18,11 +18,13 @@ def digest(path):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence",type=Path,default=Path.home()/"Desktop/Carryover-evidence")
-    parser.add_argument("--bridge-only",action="store_true")
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument("--bridge-only",action="store_true")
+    selection.add_argument("--model",choices=["qwen17_bridge","qwen4","smollm3"])
     args = parser.parse_args()
     cfg = tomllib.loads((ROOT/"config/consolidation.toml").read_text())
     manifest = json.loads((ROOT/"config/consolidation-manifest.json").read_text())
-    models = ["qwen17_bridge"] if args.bridge_only else list(manifest["models"])
+    models = [args.model] if args.model else ["qwen17_bridge"] if args.bridge_only else list(manifest["models"])
     rows, summaries, bridge = [], {}, []
     for model in models:
         folder = args.evidence/"a100/results"/model
@@ -113,14 +115,14 @@ def main():
                     "median":{m:float(np.median([r[m] for r in group if r[m] is not None])) for m in metrics},
                     "cluster_bootstrap_95":{m:[quantile(boot[m],p) for p in [.025,.975]] for m in metrics}}
     output = args.evidence/"a100"
-    prefix = "bridge" if args.bridge_only else "summary"
+    prefix = args.model or ("bridge" if args.bridge_only else "summary")
     result = {"verified":True,"config_sha256":digest(ROOT/"config/consolidation.toml"),
               "models":summaries,"bridge":bridge,"bootstrap":"2000 trajectory-cluster resamples; handoff median; seed from config"}
     (output/f"{prefix}.json").write_text(json.dumps(result,indent=2)+"\n")
     with (output/f"{prefix}.csv").open("w") as f:
         w = csv.DictWriter(f,fieldnames=rows[0].keys()); w.writeheader(); w.writerows(rows)
-    print(json.dumps({"verified":True,"bridge_max_relative_mean_gap":max(r['relative_mean_gap'] for r in bridge),
-                      "bridge_max_fstar_gap":max(r['max_fstar_gap'] for r in bridge),"models":summaries},indent=2))
+    print(json.dumps({"verified":True,"bridge_max_relative_mean_gap":max((r['relative_mean_gap'] for r in bridge),default=None),
+                      "bridge_max_fstar_gap":max((r['max_fstar_gap'] for r in bridge),default=None),"models":summaries},indent=2))
 
 if __name__=="__main__":
     main()
