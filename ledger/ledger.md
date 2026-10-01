@@ -2987,3 +2987,17 @@ verdict: H-E9F = HELD
 e7-manifest-sha256: 371fb4bf3cb089bdbca1588330f997199045426e84983e6ee6691b43fbc6a094
 
 prior-entries-sha256: 53b14a5e89f3a829a115ca9e233a3b52440e8ff1711e45ecda11126a6901bcca
+
+### 0045 — 2026-09-30 — Post-acceptance same-model consolidation registered before GPU measurements
+
+Descriptive extension authorized by the operator; no existing hypothesis or verdict changes.
+`config/consolidation.toml` fixes the models, revisions, common numerical tolerances, precision,
+scaling, controls and bridge acceptance bounds. `config/consolidation-manifest.json` fixes the
+reconstructed texts, model-specific token alignments, included cases and exclusions before prefill.
+`docs/2026-09-30-consolidation-runbook.md` defines the readout, capture change, stopping/resume rule,
+retained witness, environment, transport and paper scope. The supplied GPU was already provisioned;
+registration precedes measurements rather than the hardware request, an explicit chronology
+exception to R1 for this operator-requested descriptive extension. The original model is rerun only
+for the implementation bridge; its complete archived cohorts are reused. New models are scored
+separately at the existing numerical reference and ladder, without claiming a calibrated quality
+threshold. The existing local mechanism pilot is exploratory and may be replayed unchanged on CUDA.
