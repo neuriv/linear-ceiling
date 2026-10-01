@@ -45,7 +45,10 @@ def main():
             with np.load(folder/entry["file"]) as data:
                 for kind in ["K","V"]:
                     squares,sst = data[kind+"_squares"],data[kind+"_sst"]
-                    d = token_mean(centered_delta(squares,sst,n))
+                    normalized = centered_delta(squares,sst,n)
+                    d = token_mean(normalized)
+                    layers = normalized.mean((0,2))
+                    np.testing.assert_allclose(layers,data[kind+"_layer_mean"],rtol=1e-12)
                     np.testing.assert_allclose(d,data[kind+"_token_delta"],rtol=1e-12,atol=1e-14)
                     mean = float(d.mean())
                     np.testing.assert_allclose(mean,1-(1-squares.sum(0,dtype=np.float64)/sst).mean(),rtol=1e-12)
@@ -65,6 +68,9 @@ def main():
                            "kind":kind,"sender_tokens":entry["sender_tokens"],"receiver_tokens":entry["receiver_tokens"],
                            "matched_tokens":n,"mean_delta":mean,"r2":1-mean,"tail_fraction":float((d>tau).mean()),
                            "fstar":f_star(d,tau),"fstar_0.03":f_star(d,.03),"fstar_0.1":f_star(d,.1),
+                           "first_layer_delta":float(layers[0]),
+                           "far_token_share":float((distances>=16).mean()),
+                           "far_error_share":float(d[distances>=16].sum()/d.sum()) if d.sum()>0 else 0.,
                            "near_mean":float(d[distances<16].mean()) if (distances<16).any() else None,
                            "far_mean":float(d[distances>=16].mean()) if (distances>=16).any() else None}
                     group_rows.append(row)
@@ -88,7 +94,8 @@ def main():
                 group = [r for r in group_rows if r["cohort"]==cohort and r["kind"]==kind]
                 if not group:
                     continue
-                metrics = ["mean_delta","r2","tail_fraction","fstar","fstar_0.03","fstar_0.1","near_mean","far_mean"]
+                metrics = ["mean_delta","r2","tail_fraction","fstar","fstar_0.03","fstar_0.1","near_mean","far_mean",
+                           "first_layer_delta","far_token_share","far_error_share"]
                 trajectories = sorted({r["trajectory"] for r in group})
                 cluster = {t:[r for r in group if r["trajectory"]==t] for t in trajectories}
                 rng = make_rng(cfg["seed"])
